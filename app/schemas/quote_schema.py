@@ -2,27 +2,25 @@ from datetime import date
 from decimal import Decimal, ROUND_HALF_UP
 from pydantic import BaseModel, Field, field_validator
 
-FOUR_DECIMALS = Decimal("0.0001")
+from app.utils.finance import to_decimal
 
-class GlobalQuote(BaseModel):
+class Quote(BaseModel):
     symbol: str
 
-    open_price: Decimal
+    open: Decimal
     high: Decimal
     low: Decimal
     price: Decimal
 
     volume: int
-
-    latest_trading_day: date
+    date: date
 
     previous_close: Decimal
     change: Decimal
-
     change_percent: Decimal
 
     @field_validator(
-        "open_price",
+        "open",
         "high",
         "low",
         "price",
@@ -31,29 +29,16 @@ class GlobalQuote(BaseModel):
         "change_percent",
         mode="before",
     )
-    def round_decimal(cls, v):
-        if v is None:
-            return v
-        return Decimal(v).quantize(FOUR_DECIMALS, rounding=ROUND_HALF_UP)
+    def normalize_decimals(cls, v):
+        return to_decimal(v)
 
-    @classmethod
-    def remove_percent(cls, v):
-        return Decimal(v.replace("%", ""))
-    
     @property
     def is_positive(self) -> bool:
         return self.change > 0
-    
-    def change_percent_fraction(self) -> float:
-        return self.change_percent / 100
 
-    model_config = {
-        "populate_by_name": True
-    }
+    def change_percent_fraction(self) -> float:
+        return float(self.change_percent / 100)
+
 
 class QuoteResponse(BaseModel):
-    global_quote: GlobalQuote = Field(...)
-
-    model_config = {
-        "populate_by_name": True
-    }
+    data: Quote = Field(...)
