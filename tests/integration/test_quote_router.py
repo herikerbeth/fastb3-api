@@ -11,17 +11,17 @@ def test_root_returns_200():
     assert response.status_code == 200
     assert response.json() == {"message": "Welcome to FastB3 API"}
 
-@patch("app.services.quote_service.get_quote")
+@patch("app.routers.quote_router.get_quote")
 def test_get_price_returns_valid_quote(mock_service):
     mock_service.return_value = {
-        "global_quote": {
+        "data": {
             "symbol": "PETR4.SA",
-            "open_price": "43.2500",
+            "open": "43.2500",
             "high": "44.2700",
             "low": "43.0100",
             "price": "43.9000",
             "volume": 47876000,
-            "latest_trading_day": "2026-03-09",
+            "date": "2026-03-09",
             "previous_close": "42.1100",
             "change": "1.7900",
             "change_percent": "4.2508"
@@ -32,12 +32,12 @@ def test_get_price_returns_valid_quote(mock_service):
 
     assert response.status_code == 200
 
-    quote = QuoteResponse(**response.json())
-
-    assert quote.global_quote.symbol == "PETR4.SA"
-    assert quote.global_quote.price > 0
-    assert quote.global_quote.high > 0
-    assert quote.global_quote.low > 0
+    quote_response = QuoteResponse(**response.json())
+    quote = quote_response.data
+    assert quote.symbol == "PETR4.SA"
+    assert quote.price > 0
+    assert quote.high > 0
+    assert quote.low > 0
 
 def test_get_price_invalid_symbol_returns_404():
     response = client.get("/stock/INVALID")
