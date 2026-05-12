@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routers import quote_router
+from app.routers import quote_router, etf_router
 
 app = FastAPI(
     title="FastB3 API",
@@ -12,3 +12,4 @@ def root():
     return {"message": "Welcome to FastB3 API"}
 
 app.include_router(quote_router.router)
+app.include_router(etf_router.router)

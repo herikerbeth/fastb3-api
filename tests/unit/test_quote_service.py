@@ -15,7 +15,7 @@ def test_get_quote_returns_valid_quote(mock_ticker):
 
     assert isinstance(quote_response, QuoteResponse)
 
-    quote = quote_response.global_quote
+    quote = quote_response.data
 
     assert quote.symbol == "PETR4.SA"
     assert quote.price > 0
@@ -40,7 +40,7 @@ def test_get_quote_calculates_price_change(mock_ticker):
     mock_ticker.return_value.history.return_value = mock_stock_history()
 
     data = get_quote("PETR4")
-    quote = data.global_quote
+    quote = data.data
 
     history = mock_stock_history()
 
@@ -59,7 +59,7 @@ def test_get_quote_returns_positive_change(mock_ticker):
     mock_ticker.return_value.history.return_value = mock_stock_history()
 
     data = get_quote("PETR4")
-    quote = data.global_quote
+    quote = data.data
 
     assert quote.is_positive is True
 
@@ -77,7 +77,7 @@ def test_get_quote_returns_negative_change(mock_ticker):
     mock_ticker.return_value.history.return_value = df
 
     data = get_quote("PETR4")
-    quote = data.global_quote
+    quote = data.data
 
     previous_close = df.iloc[0]["Close"]
     current_price = df.iloc[1]["Close"]
@@ -85,7 +85,7 @@ def test_get_quote_returns_negative_change(mock_ticker):
     expected_change = current_price - previous_close
     expected_change_percent = (expected_change / previous_close) * 100
 
-    assert quote.change == expected_change
+    assert float(quote.change) == pytest.approx(expected_change)
     assert float(quote.change_percent) == pytest.approx(expected_change_percent, rel=1e-3)
     assert quote.is_positive is False
 
